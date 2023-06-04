@@ -10,13 +10,15 @@ import (
 
 // var Customize bool = false
 var agent *AgentFactory
+var wx *openwechat.Self
 
 const (
-	aiteMe      = "@ce"
+	aiteMe      = "@alex_kkbot"
 	groupPrefix = "gr"
 )
 
 func Bootstrap(bot *openwechat.Bot, weixin *openwechat.Self) {
+	wx = weixin
 	agent = InitAgent()
 	bot.UUIDCallback = openwechat.PrintlnQrcodeUrl
 	groups, err := weixin.Groups()

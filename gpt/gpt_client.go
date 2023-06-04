@@ -18,12 +18,29 @@ const (
 	goon = "/api/conversation/goon"
 )
 
+// todo 2023/6/4 lamkeizyi -
+var question chan QuestionQueue
+
+type QuestionQueue struct {
+	Id        string
+	GroupName string
+	Question  string
+	Answer    string
+}
+
+func createQuestion(id, question string) QuestionQueue {
+	return QuestionQueue{Id: id, Question: question}
+}
+
+//-----------gpt_client-----------
+
 type GptClient struct {
-	host string
+	host        string
+	questonChan chan QuestionQueue
 }
 
 func CreateGptHost(h string) *GptClient {
-	return &GptClient{h}
+	return &GptClient{host: h}
 }
 
 func matchSender(id string) *Sender {
