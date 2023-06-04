@@ -59,11 +59,11 @@ func init() {
 		}
 
 		//创建一个维护上下文的监听线程
-		//有效期60s
+		//有效期120s
 		for {
 			curr := time.Now().Unix()
 			for _, sender := range senders {
-				if curr-sender.createTime > 60 {
+				if curr-sender.createTime > 120 {
 					log.Printf("%s was expired ", sender.id)
 					delete(senders, sender.id)
 				}
