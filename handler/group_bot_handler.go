@@ -13,6 +13,9 @@ var groupHandler *GroupBotHandler
 type GroupBotHandler struct {
 	closeReplySuffix bool
 	groupNames       []string
+	syncGroups       map[string]*openwechat.Group
+	aiteMe           string
+	mode             string
 }
 
 // return is break
@@ -58,25 +61,29 @@ func (g *GroupBotHandler) infos() string {
 }
 
 func (g *GroupBotHandler) recv(ctx *openwechat.MessageContext) {
+
 	if ctx.IsText() {
+
 		log.Printf("receive the msg = %s \n", ctx.Content)
 
-		if strings.Contains(ctx.Content, aiteMe) {
+		if strings.Contains(ctx.Content, g.aiteMe) {
+
+			//sender in group
 			user, _ := ctx.SenderInGroup()
 			fmt.Printf("the user_info = %s \n", user)
 			id := user.NickName
 			fmt.Printf("nickName = %s \n ", id)
 
-			msg := strings.ReplaceAll(ctx.Content, aiteMe, "")
-			command := g.recvCommand(msg, func(info string) { ctx.ReplyText(info) })
-			if command {
+			msg := strings.ReplaceAll(ctx.Content, g.aiteMe, "")
+			if command := g.recvCommand(msg, func(info string) { ctx.ReplyText(info) }); command {
 				return
 			}
-			answer := agent.AskAgent().Ask(groupPrefix+id, msg)
-			_, err := ctx.ReplyText("@" + id + " \n" + answer)
-			if err != nil {
-				log.Println(err)
-				return
+
+			if sender, err := ctx.Sender(); err == nil {
+				if group, b := sender.AsGroup(); b {
+					g.syncAsk(group, id, msg)
+					return
+				}
 			}
 		}
 
@@ -85,7 +92,36 @@ func (g *GroupBotHandler) recv(ctx *openwechat.MessageContext) {
 	}
 }
 
+// 异步不适用GPT
+func (g *GroupBotHandler) syncAsk(group *openwechat.Group, senderNickName, msg string) {
+
+	g.syncGroups[group.NickName] = group
+	if g.mode == "gpt" {
+		answer := agent.AskAgent().Ask(groupPrefix+senderNickName, msg)
+		if _, err := wx.SendTextToGroup(group, "@"+senderNickName+" \n"+answer); err != nil {
+			log.Printf("wx.SendTextToGroup has error  = %s ", err)
+			return
+		}
+
+	} else {
+		go func() {
+			answer := agent.AskAgent().Ask(senderNickName, msg)
+			wx.SendTextToGroup(group, answer)
+		}()
+	}
+
+}
+
 func CreateGroupBotHandler() *GroupBotHandler {
-	groupHandler = &GroupBotHandler{closeReplySuffix: false, groupNames: strings.Split(loader.GroupName(), ",")}
-	return groupHandler
+	if loader.LoadBool("group.enable") {
+		groupHandler = &GroupBotHandler{
+			aiteMe:           loader.Load("group.aite_me"),
+			closeReplySuffix: false,
+			groupNames:       strings.Split(loader.GroupName(), ","),
+			syncGroups:       make(map[string]*openwechat.Group),
+			mode:             "gpt",
+		}
+		return groupHandler
+	}
+	return nil
 }

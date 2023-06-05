@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -19,24 +20,24 @@ const (
 )
 
 // todo 2023/6/4 lamkeizyi -
-var question chan QuestionQueue
-
-type QuestionQueue struct {
-	Id        string
-	GroupName string
-	Question  string
-	Answer    string
-}
-
-func createQuestion(id, question string) QuestionQueue {
-	return QuestionQueue{Id: id, Question: question}
-}
+//var question chan QuestionQueue
+//
+//type QuestionQueue struct {
+//	Id        string
+//	GroupName string
+//	Question  string
+//	Answer    string
+//}
+//
+//func createQuestion(id, question string) QuestionQueue {
+//	return QuestionQueue{Id: id, Question: question}
+//}
 
 //-----------gpt_client-----------
 
 type GptClient struct {
-	host        string
-	questonChan chan QuestionQueue
+	host string
+	//questonChan chan QuestionQueue
 }
 
 func CreateGptHost(h string) *GptClient {
@@ -71,7 +72,9 @@ func (gptClient *GptClient) Talk(id, question string) string {
 
 	marshal, _ := json.Marshal(talkVO)
 	reader := strings.NewReader(string(marshal))
-	post, err := http.Post(url, "application/json", reader)
+	client := http.Client{Timeout: 60 * time.Second}
+	post, err := client.Post(url, "application/json", reader)
+
 	if err != nil {
 		log.Println(err)
 		return "the gpt talking has error "
@@ -91,7 +94,7 @@ func (gptClient *GptClient) Talk(id, question string) string {
 
 	if len(sender.conversationId) == 0 {
 		log.Println("request generate title ...")
-		defer gptClient.genTitle(conversation_id, "gpt-3.5-turbo", message_id)
+		go gptClient.genTitle(conversation_id, "gpt-3.5-turbo", message_id)
 	}
 	setMessageId(id, conversation_id, message_id)
 	parts := t.Message.Content.Parts

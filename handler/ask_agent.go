@@ -15,15 +15,21 @@ type AgentFactory struct {
 }
 
 func InitAgent() *AgentFactory {
-	host := loader.Load("gpt.host")
 	var g, r DataChannel
-	g = Gpt{host: host, gptClient: gpt.CreateGptHost(host)}
-	redis := loader.Load("redis.host")
-	r = Redis{host: redis}
+	gptEnable := loader.LoadBool("gpt.enable")
+	if gptEnable {
+		host := loader.Load("gpt.host")
+		g = Gpt{host: host, gptClient: gpt.CreateGptHost(host)}
+		log.Printf("gpt host = %s \n ", host)
+	}
 
-	log.Printf("gpt host = %s \n  redis host = %s \n", host, redis)
+	redisEnable := loader.LoadBool("gpt.enable")
+	if redisEnable {
+		redis := loader.Load("redis.host")
+		r = Redis{host: redis}
+		log.Printf("redis host = %s \n", redis)
+	}
 
-	//load:= loader.Load("redis")
 	return &AgentFactory{
 		g,
 		r,
@@ -47,7 +53,7 @@ func (a *AgentFactory) AskAgent() DataChannel {
 	if a.redis != nil {
 		return a.redis
 	}
-	return nil
+	return DefaultChannel{}
 }
 
 type DataChannel interface {
@@ -78,4 +84,11 @@ func (g Gpt) Ask(id, question string) string {
 func (g Redis) Ask(id, question string) string {
 	//todo 2023/6/4 lamkeizyi -
 	return ""
+}
+
+type DefaultChannel struct {
+}
+
+func (g DefaultChannel) Ask(id, question string) string {
+	return "system not setting any questions"
 }

@@ -10,7 +10,7 @@ var agent *AgentFactory
 var wx *openwechat.Self
 
 const (
-	aiteMe      = "@alex_kkbot"
+	//aiteMe      = "@alex_kkbot"
 	groupPrefix = "gr"
 )
 
@@ -33,6 +33,8 @@ func Bootstrap(bot *openwechat.Bot, weixin *openwechat.Self) {
 
 func bootStrapDispatcher(dispatcher *openwechat.MessageMatchDispatcher) {
 	groupHandler := CreateGroupBotHandler()
-	dispatcher.OnUser(func(user *openwechat.User) bool { return user.IsGroup() && groupHandler.exists(user.NickName) }, groupHandler.recv)
+	if groupHandler != nil {
+		dispatcher.OnUser(func(user *openwechat.User) bool { return user.IsGroup() && groupHandler.exists(user.NickName) }, groupHandler.recv)
+	}
 
 }
