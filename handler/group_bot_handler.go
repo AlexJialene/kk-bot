@@ -3,8 +3,11 @@ package handler
 import (
 	"fmt"
 	"github.com/eatmoreapple/openwechat"
+	"github.com/robfig/cron"
 	"log"
+	"os"
 	loader "sf-bot/handler/load"
+	"sf-bot/handler/service"
 	"strings"
 )
 
@@ -16,6 +19,8 @@ type GroupBotHandler struct {
 	syncGroups       map[string]*openwechat.Group
 	aiteMe           string
 	mode             string
+	morningPaperMode SendMode
+	moyu             bool
 }
 
 // return is break
@@ -111,6 +116,54 @@ func (g *GroupBotHandler) syncAsk(group *openwechat.Group, senderNickName, msg s
 
 }
 
+// 发送图片
+func (g *GroupBotHandler) sendPic(fileName string) error {
+	return g.send(fileName, PIC)
+}
+
+func (g *GroupBotHandler) sendText(text string) error {
+	return g.send(text, TEXT)
+}
+
+type SendMode int
+
+const (
+	VIDEO SendMode = 0
+	TEXT  SendMode = 1
+	PIC   SendMode = 2
+)
+
+func (g *GroupBotHandler) send(s string, mode SendMode) error {
+	groups, err := wx.Groups()
+	if err != nil {
+		log.Println("get groups error ", err)
+	} else {
+		for _, v := range groups {
+			for _, name := range g.groupNames {
+				if strings.Contains(v.NickName, name) {
+					//fmt.Println(fileName)
+
+					if mode == PIC {
+						open, _ := os.Open(s)
+						if _, err := v.SendImage(open); err != nil {
+							log.Println("send pic has error")
+							return err
+						}
+					}
+
+					if mode == TEXT {
+						if _, err := v.SendText(s); err != nil {
+							log.Println("send text has error")
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func CreateGroupBotHandler() *GroupBotHandler {
 	if loader.LoadBool("group.enable") {
 		groupHandler = &GroupBotHandler{
@@ -119,7 +172,54 @@ func CreateGroupBotHandler() *GroupBotHandler {
 			groupNames:       strings.Split(loader.GroupName(), ","),
 			syncGroups:       make(map[string]*openwechat.Group),
 			mode:             "gpt",
+			morningPaperMode: SendMode(loader.LoadInt("group.morning_paper_mode")),
 		}
+
+		go func() {
+			// 2023/6/6 lamkeizyi - 工作日9点半运行
+			if loader.LoadBool("group.morning_paper") {
+				fmt.Println("initialize 9:30 timer")
+				c := cron.New()
+				c.AddFunc("1 30 9 ? * 2,3,4,5,6", func() {
+					if groupHandler.morningPaperMode == TEXT {
+						if dayTextService, err := service.GetPicDayTextService(); err == nil {
+							log.Println("cuz has error that send pic . convert to text to sending... ")
+							groupHandler.sendText(dayTextService.ToString())
+						}
+					} else {
+						service.StartMoyuPicDayService(func(name string) {
+							if err := groupHandler.sendPic(name); err != nil {
+								//convert to text
+								if dayTextService, err := service.GetPicDayTextService(); err == nil {
+									log.Println("cuz has error that send pic . convert to text to sending... ")
+									groupHandler.sendText(dayTextService.ToString())
+								}
+
+							}
+						})
+					}
+				})
+				c.Start()
+				select {}
+			}
+
+		}()
+
+		go func() {
+			// 2023/6/6 lamkeizyi - 工作日10点
+			if loader.LoadBool("group.moyu") {
+				fmt.Println("initialize 10:00 timer")
+				c := cron.New()
+				c.AddFunc("1 0 10 ? * 2,3,4,5,6", func() {
+					service.StartMoyuPicDayService(func(name string) {
+						groupHandler.sendPic(name)
+					})
+				})
+				c.Start()
+				select {}
+			}
+		}()
+
 		return groupHandler
 	}
 	return nil

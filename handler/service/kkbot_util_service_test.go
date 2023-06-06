@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -20,9 +19,16 @@ func Test2(t *testing.T) {
 }
 
 func Test3(t *testing.T) {
-	StartPicDayService(func(file *os.File) {
-		fmt.Println("======")
-		fmt.Println(file.Name())
+	//StartPicDayService(func(file *os.File) {
+	//	fmt.Println("======")
+	//	fmt.Println(file.Name())
+	//})
+
+}
+
+func Test4(t *testing.T) {
+	StartMoyuPicDayService(func(name string) {
+		fmt.Println(name)
 	})
 
 }

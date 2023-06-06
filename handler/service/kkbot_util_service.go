@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
 	"runtime"
-	loader "sf-bot/handler/load"
 	"strconv"
 	"strings"
 	"time"
@@ -33,13 +33,29 @@ type ZhihuVO struct {
 	Url  string
 }
 
-type EveryDay struct {
+type EveryDayText struct {
 	ImgUrl string
+	Name   string
+	Time   []string
+	Data   []string
+}
+
+func (e *EveryDayText) ToString() string {
+	r := ""
+	r = r + e.Name + "\n"
+	for _, v := range e.Time {
+		r = r + v + " "
+	}
+	r = r + "\n \n"
+	for i, datum := range e.Data {
+		r = r + strconv.Itoa(i+1) + "、" + datum + "\n \n"
+	}
+	return r
 }
 
 type Moyu struct {
-	success bool
-	url     string
+	Success bool
+	Url     string
 }
 
 // StartNewsTickService 知乎热版
@@ -74,51 +90,54 @@ func StartPicTickService(f func(file *os.File)) {
 
 }
 
-func StartPicDayService(f func(file *os.File)) {
+func GetPicDayTextService() (*EveryDayText, error) {
 	client := http.Client{Timeout: 60 * time.Second}
 	form, _ := client.Get("https://api.vvhan.com/api/60s?type=json")
 	if all, err := io.ReadAll(form.Body); err == nil {
 		defer form.Body.Close()
-		b := &EveryDay{}
-		json.Unmarshal(all, b)
-		if len(b.ImgUrl) > 0 {
-			open, err := os.Create(openFileName())
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				if get, err := client.Get(b.ImgUrl); err == nil {
-					readAll, _ := io.ReadAll(get.Body)
-					if _, err := open.Write(readAll); err == nil {
-						f(open)
-					}
-					defer get.Body.Close()
-					defer open.Close()
+		b := &EveryDayText{}
+		err := json.Unmarshal(all, b)
+		return b, err
+	}
+	return nil, errors.New("GetPicDayTextService error ")
+}
+
+func StartPicDayService(f func(s string)) {
+	if service, err := GetPicDayTextService(); err == nil {
+		if len(service.ImgUrl) > 0 {
+			client := http.Client{Timeout: 60 * time.Second}
+			if get, err := client.Get(service.ImgUrl); err == nil {
+				readAll, _ := io.ReadAll(get.Body)
+				fileName := openFileName()
+				if err := os.WriteFile(fileName, readAll, 0777); err == nil {
+					f(fileName)
 				}
+				defer get.Body.Close()
 			}
 		}
 	}
+
 }
 
-func StartMoyuPicDayService(f func(file *os.File)) {
+func StartMoyuPicDayService(f func(name string)) {
+	log.Println("load moyu pic ... ")
 	client := http.Client{Timeout: 60 * time.Second}
 	form, _ := client.Get("https://api.vvhan.com/api/moyu?type=json")
 	if all, err := io.ReadAll(form.Body); err == nil {
 		defer form.Body.Close()
 		b := &Moyu{}
 		json.Unmarshal(all, b)
-		if len(b.url) > 0 {
-			open, err := os.Create(openFileName())
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				if get, err := client.Get(b.url); err == nil {
-					readAll, _ := io.ReadAll(get.Body)
-					if _, err := open.Write(readAll); err == nil {
-						f(open)
-					}
-					defer get.Body.Close()
-					defer open.Close()
+		if len(b.Url) > 0 {
+			fmt.Printf("url  = %s \n ", b.Url)
+			//b.Url = "https://img1.baidu.com/it/u=2932772446,2464263128&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=1082"
+			if get, err := http.Get(b.Url); err == nil {
+				readAll, _ := io.ReadAll(get.Body)
+				name := openFileName()
+				if err := os.WriteFile(openFileName(), readAll, 0777); err == nil {
+					log.Println("callback pic ... ")
+					f(name)
 				}
+				defer get.Body.Close()
 			}
 		}
 	}
@@ -144,21 +163,24 @@ func Weather(city string) *WeatherVO {
 }
 
 func openFileName() string {
-	load := loader.Load("commons.file_temp_dir")
+	//load := loader.Load("commons.file_temp_dir")
 	goos := runtime.GOOS
 	sep := ""
-	s := string(time.Now().Unix())
+	s := strconv.FormatInt(time.Now().Unix(), 10)
 	if goos == "windows" {
 		sep = "\\"
 	}
 	if goos == "linux" {
 		sep = "/"
 	}
-	if len(load) > 0 {
-		return load + sep + s + ".png"
-	} else {
-		return os.TempDir() + sep + s + ".png"
-	}
+
+	//if len(load) > 0 {
+	//	log.Printf("the temp file dir = %s \n ", load)
+	//	return load + sep + s + ".png"
+	//} else {
+	log.Printf("the temp file dir = %s \n ", os.TempDir())
+	return os.TempDir() + sep + s + ".png"
+	//}
 }
 
 func interfaceToStruct(m map[string]interface{}, obj interface{}) error {
