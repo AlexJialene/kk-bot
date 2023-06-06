@@ -6,6 +6,7 @@ require github.com/eatmoreapple/openwechat v1.4.3
 
 require (
 	github.com/go-ini/ini v1.67.0
+	github.com/robfig/cron v1.2.0
 	github.com/sf-bot/gpt v0.0.0-00010101000000-000000000000
 )
 

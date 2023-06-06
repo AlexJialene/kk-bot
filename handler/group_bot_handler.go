@@ -39,8 +39,8 @@ func (g *GroupBotHandler) recvCommand(command string, f func(i string)) bool {
 }
 
 func (g *GroupBotHandler) exists(name string) bool {
-	split := strings.Split(loader.GroupName(), ",")
-	for _, key := range split {
+	//split := strings.Split(loader.GroupName(), ",")
+	for _, key := range g.groupNames {
 		if strings.Contains(name, key) {
 			return true
 		}
@@ -94,7 +94,6 @@ func (g *GroupBotHandler) recv(ctx *openwechat.MessageContext) {
 
 // 异步不适用GPT
 func (g *GroupBotHandler) syncAsk(group *openwechat.Group, senderNickName, msg string) {
-
 	g.syncGroups[group.NickName] = group
 	if g.mode == "gpt" {
 		answer := agent.AskAgent().Ask(groupPrefix+senderNickName, msg)
