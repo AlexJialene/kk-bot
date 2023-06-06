@@ -11,6 +11,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	loader "sf-bot/handler/load"
 	"strconv"
 	"strings"
 	"time"
@@ -163,7 +164,7 @@ func Weather(city string) *WeatherVO {
 }
 
 func openFileName() string {
-	//load := loader.Load("commons.file_temp_dir")
+	load := loader.Load("commons.file_temp_dir")
 	goos := runtime.GOOS
 	sep := ""
 	s := strconv.FormatInt(time.Now().Unix(), 10)
@@ -174,13 +175,13 @@ func openFileName() string {
 		sep = "/"
 	}
 
-	//if len(load) > 0 {
-	//	log.Printf("the temp file dir = %s \n ", load)
-	//	return load + sep + s + ".png"
-	//} else {
-	log.Printf("the temp file dir = %s \n ", os.TempDir())
-	return os.TempDir() + sep + s + ".png"
-	//}
+	if len(load) > 0 {
+		log.Printf("the temp file dir = %s \n ", load)
+		return load + sep + s + ".png"
+	} else {
+		log.Printf("the temp file dir = %s \n ", os.TempDir())
+		return os.TempDir() + sep + s + ".png"
+	}
 }
 
 func interfaceToStruct(m map[string]interface{}, obj interface{}) error {
