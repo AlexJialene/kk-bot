@@ -11,13 +11,13 @@ import (
 var file *ini.File
 
 func init() {
-	load, err := ini.Load("sf-bot.ini")
+	load, err := ini.Load("kkbot.ini")
 	if err != nil {
-		log.Println("can't find sf-bot.ini")
+		log.Println("can't find kkbot.ini")
 		panic(err)
 	}
 	file = load
-	log.Println("load sf-bot.ini ... ")
+	log.Println("load kkbot.ini ... ")
 }
 
 func Exist(str string) bool {
