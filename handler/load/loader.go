@@ -3,6 +3,7 @@ package loader
 import (
 	"github.com/go-ini/ini"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -46,4 +47,11 @@ func LoadBool(str string) bool {
 	split := strings.Split(str, ".")
 	key, _ := file.Section(split[0]).Key(split[1]).Bool()
 	return key
+}
+
+func LoadInt(str string) int {
+	split := strings.Split(str, ".")
+	key := file.Section(split[0]).Key(split[1]).String()
+	atoi, _ := strconv.Atoi(key)
+	return atoi
 }
