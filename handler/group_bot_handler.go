@@ -187,7 +187,7 @@ func CreateGroupBotHandler() *GroupBotHandler {
 							groupHandler.sendText(dayTextService.ToString())
 						}
 					} else {
-						service.StartMoyuPicDayService(func(name string) {
+						service.StartPicDayService(func(name string) {
 							if err := groupHandler.sendPic(name); err != nil {
 								//convert to text
 								if dayTextService, err := service.GetPicDayTextService(); err == nil {
