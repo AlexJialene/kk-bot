@@ -32,3 +32,18 @@ func Test4(t *testing.T) {
 	})
 
 }
+
+type DemoCall struct {
+}
+
+func (d DemoCall) Call(r string) {
+	fmt.Println(r)
+}
+
+func Test5(t *testing.T) {
+	//CreateCLSRoll(DemoCall{})
+	//select {}
+	//list := GetCLSRollList()
+	//fmt.Println(list)
+
+}

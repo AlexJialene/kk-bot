@@ -108,13 +108,17 @@ func (h *userHandler) command(id, content string, f func(msg string)) bool {
 			name := elem.FieldByName(split[0])
 			if split[1] == "enable" {
 				name.SetBool(true)
-				f(h.ToString(id))
-				return true
+				if i != 3 {
+					f(h.ToString(id))
+					return true
+				}
 			}
 			if split[1] == "disable" {
 				name.SetBool(false)
-				f(h.ToString(id))
-				return true
+				if i != 3 {
+					f(h.ToString(id))
+					return true
+				}
 			}
 			if i == 3 {
 				if atoi, err := strconv.Atoi(split[0]); err == nil {
@@ -165,7 +169,7 @@ func (h *userHandler) assemblyUser(id string, friend *openwechat.Friend) {
 
 func (h *userHandler) ToString(id string) string {
 	var result = ""
-	result += "======setting======\n"
+	result += "------setting------\n"
 
 	info := h.bdInfos[id]
 	of := reflect.ValueOf(info)
@@ -190,7 +194,7 @@ func (h *userHandler) ToString(id string) string {
 			result += name + " : " + v + "\n"
 		}
 	}
-	result += "======setting======"
+	result += "------setting------"
 	return result
 }
 

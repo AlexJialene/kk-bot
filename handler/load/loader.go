@@ -2,7 +2,6 @@ package loader
 
 import (
 	"github.com/go-ini/ini"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -11,13 +10,13 @@ import (
 var file *ini.File
 
 func init() {
-	load, err := ini.Load("kkbot.ini")
-	if err != nil {
-		log.Println("can't find kkbot.ini")
-		panic(err)
-	}
-	file = load
-	log.Println("load kkbot.ini ... ")
+	//load, err := ini.Load("kkbot.ini")
+	//if err != nil {
+	//	log.Println("can't find kkbot.ini")
+	//	panic(err)
+	//}
+	//file = load
+	//log.Println("load kkbot.ini ... ")
 }
 
 func Exist(str string) bool {
