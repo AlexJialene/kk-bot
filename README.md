@@ -12,15 +12,7 @@
 
 ## 效果
 
-<table rules="none" align="center">
-	<tr>
-		<td>
-			<center>
-				<img src="https://github.com/AlexJialene/kk-bot/blob/feature/message_handler_by_lamkeizyi/doc/chat.jpg?raw=true" width="60%" />
-			</center>
-		</td>
-	</tr>
-</table>
+点击查看图片效果及使用介绍 [kkbot-wechat bot – kk卷不过了 (ilinetoo.com)](http://ilinetoo.com/2023/06/221.html)
 
 
 
