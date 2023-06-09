@@ -16,14 +16,14 @@
 	<tr>
 		<td>
 			<center>
-				<img src="" width="60%" />
+				<img src="https://github.com/AlexJialene/kk-bot/blob/feature/message_handler_by_lamkeizyi/doc/paper.jpg?raw=true" width="60%" />
 				<br/>
 				<font color="AAAAAA">paper.jpg</font>
 			</center>
 		</td>
 		<td>
 			<center>
-				<img src="" width="60%" />
+				<img src="https://github.com/AlexJialene/kk-bot/blob/feature/message_handler_by_lamkeizyi/doc/gpt.jpg?raw=true" width="60%" />
 				<br/>
 				<font color="AAAAAA">jpt.jpg</font>
 			</center>
