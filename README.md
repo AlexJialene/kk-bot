@@ -10,6 +10,13 @@
 
 
 
+## 效果
+
+点击查看图片效果及使用介绍 [kkbot-wechat bot – kk卷不过了 (ilinetoo.com)](http://ilinetoo.com/2023/06/221.html)
+
+
+
+
 ## 准备
 
 ### pandora
@@ -32,7 +39,7 @@ docker run -it --rm -p 19090:19090 -d \
  pengzhile/pandora 
 ```
 
-
+> 注意：这里PANDORA_ACCESS_TOKEN是你的chatGPT accessToken。 可访问[ChatGPT Auth (fakeopen.com)](https://ai.fakeopen.com/auth)获取
 
 ## 开始
 
@@ -50,8 +57,7 @@ nohup ./kkbot > ./kkbot.log &
 
 
 
-
-鸣谢
+## 鸣谢
 
 - [pengzhile/pandora](https://github.com/pengzhile/pandora)
 - [openwechat](https://github.com/eatmoreapple/openwechat)
