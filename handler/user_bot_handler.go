@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	loader "sf-bot/handler/load"
+	"sf-bot/handler/service"
 	"strconv"
 	"strings"
 	"time"
@@ -17,7 +18,6 @@ import (
 type user struct {
 	id     string
 	friend *openwechat.Friend
-
 	//废弃-未用到
 	gptEnable bool
 }
@@ -28,15 +28,18 @@ type userHandler struct {
 }
 
 type BDInfo struct {
-	Id            string `json:"id"`
-	NickName      string `json:"nickName"`
-	GptEnable     bool   `json:"gptEnable"`
-	ZhihuPush     bool   `json:"zhihuPush"`
-	WeiboPush     bool   `json:"weiboPush"`
-	NewsPush      bool   `json:"newsPush"`
-	ZhihuPushHour int    `json:"zhihuPushHour"`
-	WeiboPushHour int    `json:"weiboPushHour"`
-	NewsPushHour  int    `json:"newsPushHour"`
+	Id        string `json:"id"`
+	NickName  string `json:"nickName"`
+	GptEnable bool   `json:"gptEnable"`
+	ClsPush   bool   `json:"clsPush"`
+
+	//相关推送key保留
+	ZhihuPush     bool `json:"zhihuPush"`
+	WeiboPush     bool `json:"weiboPush"`
+	NewsPush      bool `json:"newsPush"`
+	ZhihuPushHour int  `json:"zhihuPushHour"`
+	WeiboPushHour int  `json:"weiboPushHour"`
+	NewsPushHour  int  `json:"newsPushHour"`
 }
 
 const bdFile = "./user_handler_bds.json"
@@ -63,6 +66,8 @@ func (h *userHandler) loadBD() {
 			h.bdInfos = *i
 			log.Println("load bds ", h.bdInfos)
 		}
+
+		//todo
 	}
 }
 
@@ -157,6 +162,9 @@ func (h *userHandler) assemblyUser(id string, friend *openwechat.Friend) {
 	u2 := &user{id, friend, false}
 	h.users[id] = u2
 
+	//财经推送服务注册
+	service.CreateCLSRoll(u2)
+
 	//如果从本地临时文件获取到配置，则采用文件中的配置
 	info := h.bdInfos[id]
 	if info != nil {
@@ -240,4 +248,15 @@ func CreateUserHandler() *userHandler {
 
 	}
 	return nil
+}
+
+func (u *user) Call(clsContent string) bool {
+	if users.bdInfos[u.id].ClsPush {
+		_, err := u.friend.SendText(clsContent)
+		if err != nil {
+			log.Println("send cls content error , ", err)
+		}
+		return true
+	}
+	return false
 }

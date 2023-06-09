@@ -53,14 +53,16 @@ func init() {
 
 		for {
 			//test
-			fmt.Println(111)
-			time.Sleep(10 * time.Second)
+			//fmt.Println(111)
+			//time.Sleep(10 * time.Second)
 
-			result := GetCLSRollList()
-			assemble(result)
+			if len(funcList) > 0 {
+				result := GetCLSRollList()
+				assemble(result)
+			}
 
-			fmt.Println("ending ")
-			time.Sleep(10 * time.Minute)
+			fmt.Println("get roll_data ending ")
+			time.Sleep(5 * time.Minute)
 		}
 	}()
 }
@@ -72,6 +74,11 @@ func assemble(result *ResponseBody) {
 
 	if result.Error == 0 {
 		if len(result.Data.Data) > 0 {
+			if lastCLSId == 0 {
+
+				//todo
+			}
+
 			for i := len(result.Data.Data) - 1; i >= 0; i-- {
 				v := result.Data.Data[i]
 
