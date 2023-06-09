@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/eatmoreapple/openwechat"
-	"github.com/robfig/cron"
 	"log"
 	"os"
 	loader "sf-bot/handler/load"
@@ -16,7 +15,8 @@ var groupHandler *GroupBotHandler
 type GroupBotHandler struct {
 	closeReplySuffix bool
 	groupNames       []string
-	syncGroups       map[string]*openwechat.Group
+	clsGroupNames    []string
+	clsGroups        map[string]*openwechat.Group
 	aiteMe           string
 	mode             string
 	morningPaperMode SendMode
@@ -38,7 +38,7 @@ func (g *GroupBotHandler) recvCommand(command string, f func(i string)) bool {
 	}
 
 	if !g.closeReplySuffix {
-		f(command + "\n" + "------------\n" + "已收到，我知道你很急，但是你先别急！有问题联系Alex_")
+		f(command + "\n" + "------------\n" + "kk说：我现在支持私聊啦~不过要先输入特殊命令哦。记得Alex_了解~")
 	}
 	return false
 }
@@ -99,7 +99,6 @@ func (g *GroupBotHandler) recv(ctx *openwechat.MessageContext) {
 
 // 异步不适用GPT
 func (g *GroupBotHandler) syncAsk(group *openwechat.Group, senderNickName, msg string) {
-	g.syncGroups[group.NickName] = group
 	if g.mode == "gpt" {
 		answer := agent.AskAgent().Ask(groupPrefix+senderNickName, msg)
 		if _, err := wx.SendTextToGroup(group, "@"+senderNickName+" \n"+answer); err != nil {
@@ -132,6 +131,18 @@ const (
 	TEXT  SendMode = 1
 	PIC   SendMode = 2
 )
+
+func (g *GroupBotHandler) Call(text string) bool {
+	if len(g.clsGroups) > 0 {
+		for _, g := range g.clsGroups {
+			if _, err := g.SendText(text); err != nil {
+				log.Println("send cls content error , ", err)
+			}
+			return true
+		}
+	}
+	return false
+}
 
 func (g *GroupBotHandler) send(s string, mode SendMode) error {
 	groups, err := wx.Groups()
@@ -170,55 +181,27 @@ func CreateGroupBotHandler() *GroupBotHandler {
 			aiteMe:           loader.Load("group.aite_me"),
 			closeReplySuffix: false,
 			groupNames:       strings.Split(loader.GroupName(), ","),
-			syncGroups:       make(map[string]*openwechat.Group),
+			clsGroupNames:    strings.Split(loader.Load("group.cls_group_name"), ","),
+			clsGroups:        make(map[string]*openwechat.Group),
 			mode:             "gpt",
 			morningPaperMode: SendMode(loader.LoadInt("group.morning_paper_mode")),
 		}
 
-		go func() {
-			// 2023/6/6 lamkeizyi - 工作日9点半运行
-			if loader.LoadBool("group.morning_paper") {
-				fmt.Println("initialize 9:30 timer")
-				c := cron.New()
-				c.AddFunc("1 30 9 ? * 2,3,4,5,6", func() {
-					if groupHandler.morningPaperMode == TEXT {
-						if dayTextService, err := service.GetPicDayTextService(); err == nil {
-							log.Println("cuz has error that send pic . convert to text to sending... ")
-							groupHandler.sendText(dayTextService.ToString())
-						}
-					} else {
-						service.StartMoyuPicDayService(func(name string) {
-							if err := groupHandler.sendPic(name); err != nil {
-								//convert to text
-								if dayTextService, err := service.GetPicDayTextService(); err == nil {
-									log.Println("cuz has error that send pic . convert to text to sending... ")
-									groupHandler.sendText(dayTextService.ToString())
-								}
-
-							}
-						})
+		if groups, err := wx.Groups(); err == nil {
+			log.Println("load group.cls_group_name")
+			for _, v := range groupHandler.clsGroupNames {
+				for _, g := range groups {
+					if strings.Contains(g.NickName, v) {
+						groupHandler.clsGroups[v] = g
 					}
-				})
-				c.Start()
-				select {}
+				}
 			}
+		}
 
-		}()
+		service.CreateCLSRoll(groupHandler)
 
-		go func() {
-			// 2023/6/6 lamkeizyi - 工作日10点
-			if loader.LoadBool("group.moyu") {
-				fmt.Println("initialize 10:00 timer")
-				c := cron.New()
-				c.AddFunc("1 0 10 ? * 2,3,4,5,6", func() {
-					service.StartMoyuPicDayService(func(name string) {
-						groupHandler.sendPic(name)
-					})
-				})
-				c.Start()
-				select {}
-			}
-		}()
+		go func() { StartGroupMorningPaperTimer() }()
+		go func() { StartGroupMoyuTimer() }()
 
 		return groupHandler
 	}

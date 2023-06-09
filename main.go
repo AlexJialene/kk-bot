@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	boot()
+}
+
+func boot() {
 	bot := openwechat.DefaultBot(openwechat.Desktop)
 	bot.UUIDCallback = openwechat.PrintlnQrcodeUrl
 
@@ -26,8 +30,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	//load := loader.Load("cuz")
-	//load := loader.LoadBool("commons.cuz")
-	//fmt.Println(load)
 }

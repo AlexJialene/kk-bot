@@ -32,9 +32,15 @@ func Bootstrap(bot *openwechat.Bot, weixin *openwechat.Self) {
 }
 
 func bootStrapDispatcher(dispatcher *openwechat.MessageMatchDispatcher) {
+	// 2023/6/8 lamkeizyi - group inits
 	groupHandler := CreateGroupBotHandler()
 	if groupHandler != nil {
 		dispatcher.OnUser(func(user *openwechat.User) bool { return user.IsGroup() && groupHandler.exists(user.NickName) }, groupHandler.recv)
+	}
+	// 2023/6/8 lamkeizyi - user inits
+	uh := CreateUserHandler()
+	if uh != nil {
+		dispatcher.OnUser(func(user *openwechat.User) bool { return user.IsFriend() }, uh.Recv)
 	}
 
 }
