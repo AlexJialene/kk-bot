@@ -10,6 +10,29 @@
 
 
 
+## 效果
+
+<table rules="none" align="center">
+	<tr>
+		<td>
+			<center>
+				<img src="" width="60%" />
+				<br/>
+				<font color="AAAAAA">paper.jpg</font>
+			</center>
+		</td>
+		<td>
+			<center>
+				<img src="" width="60%" />
+				<br/>
+				<font color="AAAAAA">jpt.jpg</font>
+			</center>
+		</td>
+	</tr>
+</table>
+
+
+
 ## 准备
 
 ### pandora
@@ -32,7 +55,7 @@ docker run -it --rm -p 19090:19090 -d \
  pengzhile/pandora 
 ```
 
-
+> 注意：这里PANDORA_ACCESS_TOKEN是你的chatGPT accessToken。 可访问[ChatGPT Auth (fakeopen.com)](https://ai.fakeopen.com/auth)获取
 
 ## 开始
 
@@ -50,8 +73,7 @@ nohup ./kkbot > ./kkbot.log &
 
 
 
-
-鸣谢
+## 鸣谢
 
 - [pengzhile/pandora](https://github.com/pengzhile/pandora)
 - [openwechat](https://github.com/eatmoreapple/openwechat)
