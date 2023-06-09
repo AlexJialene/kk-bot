@@ -39,15 +39,15 @@ type DemoCall struct {
 }
 
 func (d DemoCall) Call(r string) bool {
-	fmt.Println("rev callback")
-	fmt.Println(r)
+	//fmt.Println("rev callback")
+	//fmt.Println(r)
 	return true
 }
 
 func Test5(t *testing.T) {
-	CreateCLSRoll(DemoCall{})
+	//CreateCLSRoll(DemoCall{})
 	//test
-	select {}
+	//select {}
 
 }
 

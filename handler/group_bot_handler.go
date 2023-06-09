@@ -38,7 +38,7 @@ func (g *GroupBotHandler) recvCommand(command string, f func(i string)) bool {
 	}
 
 	if !g.closeReplySuffix {
-		f(command + "\n" + "------------\n" + "已收到，我知道你很急，但是你先别急！有问题联系Alex_")
+		f(command + "\n" + "------------\n" + "kk说：我现在支持私聊啦~不过要先输入特殊命令哦。记得Alex_了解~")
 	}
 	return false
 }
@@ -188,6 +188,7 @@ func CreateGroupBotHandler() *GroupBotHandler {
 		}
 
 		if groups, err := wx.Groups(); err == nil {
+			log.Println("load group.cls_group_name")
 			for _, v := range groupHandler.clsGroupNames {
 				for _, g := range groups {
 					if strings.Contains(g.NickName, v) {

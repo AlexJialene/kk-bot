@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -28,7 +29,7 @@ type ResponseBody struct {
 }
 
 type ResponseData struct {
-	Data []RollData `json:"roll_data"`
+	Data roll `json:"roll_data"`
 }
 
 type RollData struct {
@@ -54,18 +55,20 @@ func init() {
 		for {
 			//test
 			//fmt.Println(111)
-			//time.Sleep(10 * time.Second)
-
-			if len(funcList) > 0 {
-				result := GetCLSRollList()
-				assemble(result)
-			}
-
+			//time.Sleep(30 * time.Second)
+			result := GetCLSRollList()
+			assemble(result)
 			fmt.Println("get roll_data ending ")
 			time.Sleep(5 * time.Minute)
 		}
 	}()
 }
+
+type roll []RollData
+
+func (a roll) Len() int           { return len(a) }
+func (a roll) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a roll) Less(i, j int) bool { return a[i].Id < a[j].Id }
 
 func assemble(result *ResponseBody) {
 	if result == nil {
@@ -74,14 +77,13 @@ func assemble(result *ResponseBody) {
 
 	if result.Error == 0 {
 		if len(result.Data.Data) > 0 {
-			if lastCLSId == 0 {
 
-				//todo
-			}
+			//排序
+			sort.Sort(result.Data.Data)
 
-			for i := len(result.Data.Data) - 1; i >= 0; i-- {
-				v := result.Data.Data[i]
-
+			log.Printf("getrolldata,data len = %d", len(result.Data.Data))
+			for _, v := range result.Data.Data {
+				//v := result.Data.Data[i]
 				//fmt.Printf("%d  id  = %d", i, v.Id)
 				//fmt.Printf("%d = content = %s", i, v.Content[0:10])
 				//fmt.Println("======")
