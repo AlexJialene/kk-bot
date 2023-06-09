@@ -14,7 +14,22 @@
 
 点击查看图片效果及使用介绍 [kkbot-wechat bot – kk卷不过了 (ilinetoo.com)](http://ilinetoo.com/2023/06/221.html)
 
-
+<div align="center">
+<table>
+	<tr>
+		<td align="center">
+				<img src="http://ilinetoo.com/wp-content/uploads/2023/06/groupchat.png" width="60%" />
+    <br/>
+   <font>群聊</font>
+		</td>
+		<td align="center">
+				<img src="http://ilinetoo.com/wp-content/uploads/2023/06/private_chat.png" width="60%" />
+    <br/>
+    <font>私聊</font>
+		</td>
+	</tr>
+</table>
+</div>
 
 
 ## 准备
