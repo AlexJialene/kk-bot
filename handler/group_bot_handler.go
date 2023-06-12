@@ -135,6 +135,7 @@ const (
 func (g *GroupBotHandler) Call(text string) bool {
 	if len(g.clsGroups) > 0 {
 		for _, g := range g.clsGroups {
+			log.Printf("send cls content , group_name = %s \n", g.NickName)
 			if _, err := g.SendText(text); err != nil {
 				log.Println("send cls content error , ", err)
 			}
@@ -177,11 +178,24 @@ func (g *GroupBotHandler) send(s string, mode SendMode) error {
 
 func CreateGroupBotHandler() *GroupBotHandler {
 	if loader.LoadBool("group.enable") {
+
+		var groupArr []string
+		var clsGroupArr []string
+		groupNames := loader.GroupName()
+		if groupNames != "" && len(groupNames) > 0 {
+			groupArr = strings.Split(groupNames, ",")
+		}
+
+		load := loader.Load("group.cls_group_name")
+		if load != "" && len(load) > 0 {
+			clsGroupArr = strings.Split(load, ",")
+		}
+
 		groupHandler = &GroupBotHandler{
 			aiteMe:           loader.Load("group.aite_me"),
 			closeReplySuffix: false,
-			groupNames:       strings.Split(loader.GroupName(), ","),
-			clsGroupNames:    strings.Split(loader.Load("group.cls_group_name"), ","),
+			groupNames:       groupArr,
+			clsGroupNames:    clsGroupArr,
 			clsGroups:        make(map[string]*openwechat.Group),
 			mode:             "gpt",
 			morningPaperMode: SendMode(loader.LoadInt("group.morning_paper_mode")),
@@ -190,6 +204,7 @@ func CreateGroupBotHandler() *GroupBotHandler {
 		if groups, err := wx.Groups(); err == nil {
 			log.Println("load group.cls_group_name")
 			for _, v := range groupHandler.clsGroupNames {
+				log.Printf("cls_group_name = %s \n", v)
 				for _, g := range groups {
 					if strings.Contains(g.NickName, v) {
 						groupHandler.clsGroups[v] = g
@@ -198,7 +213,11 @@ func CreateGroupBotHandler() *GroupBotHandler {
 			}
 		}
 
-		service.CreateCLSRoll(groupHandler)
+		if len(groupHandler.clsGroups) > 0 {
+			log.Printf("register cls_roll_data callback \n ")
+			log.Printf("cls_group_name = %s \n", groupHandler.clsGroupNames)
+			service.CreateCLSRoll(groupHandler)
+		}
 
 		go func() { StartGroupMorningPaperTimer() }()
 		go func() { StartGroupMoyuTimer() }()

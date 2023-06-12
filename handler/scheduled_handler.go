@@ -14,7 +14,7 @@ func StartGroupMorningPaperTimer() {
 	if loader.LoadBool("group.morning_paper") {
 		fmt.Println("initialize 9:30 timer")
 		c := cron.New()
-		c.AddFunc("1 30 9 ? * 2,3,4,5,6", func() {
+		c.AddFunc("0 30 9 * * ?", func() {
 
 			// 2023/6/10 lamkeizyi - 是否是此cron有问题，独立加上工作日判断
 			if isWeekday(time.Now()) {
@@ -47,7 +47,7 @@ func StartGroupMoyuTimer() {
 	if loader.LoadBool("group.moyu") {
 		fmt.Println("initialize 10:00 timer")
 		c := cron.New()
-		c.AddFunc("1 0 10 ? * 2,3,4,5,6", func() {
+		c.AddFunc("0 0 10 * * ?", func() {
 
 			// 2023/6/10 lamkeizyi - 是否是此cron有问题，独立加上工作日判断
 			if isWeekday(time.Now()) {
